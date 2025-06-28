@@ -9,6 +9,6 @@ export const postInstructor = async (ctx: Context) => {
 export const putInstructor = async (ctx: Context) => {
 
 };
-export const deleteInstructor = async (ctx: Context) => {
-    
+export const deleteInstructor = async (ctx: RouterContext<"/instructor/:id">) => {
+
 };
