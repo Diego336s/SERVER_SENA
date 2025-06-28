@@ -9,7 +9,7 @@ Content-Type: application/json
   "email": ""
 }
 ###
-PUT http://localhost:8000/instructor/1
+PUT http://localhost:8000/instructor
 Content-Type: application/json
 
 {
