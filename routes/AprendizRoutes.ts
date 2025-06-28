@@ -1,6 +1,6 @@
 import { Router } from "../dependencies/dependecias.ts";
 import { getAprendiz, postAprendiz, putAprendiz, deleteAprendiz } from "../controller/AprendizController.ts";
-import { Application } from 'https://deno.land/x/oak@v17.1.4/mod.ts';
+
 
 const aprendizRouter = new Router();
 
