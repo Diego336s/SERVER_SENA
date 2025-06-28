@@ -1,1 +1,1 @@
-Diego gay
+El oscar melo mama
