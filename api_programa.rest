@@ -2,3 +2,8 @@ GET http://localhost:8000/programa
 ###
 
 POST http://localhost:8000/programa
+Content-Type: application/json
+
+{
+"programa": "Electricidad Industrial"
+}

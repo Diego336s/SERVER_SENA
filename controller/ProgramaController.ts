@@ -1,5 +1,10 @@
+import { errors } from "https://deno.land/x/oak@v17.1.4/deps.ts";
 import { Context, RouterContext, z } from "../dependencies/dependecias.ts";
 import { Programa } from "../models/ProgramaModel.ts";
+
+const programaValidacion = z.object({
+  programa: z.string().min(1, "El nombre es obligatorio"),
+});
 
 export const getPrograma = async (ctx: Context) => {
   const { response } = ctx;
@@ -40,6 +45,63 @@ export const getPrograma = async (ctx: Context) => {
 };
 
 export const postPrograma = async (ctx: Context) => {
+  const { response, request } = ctx;
+  try {
+    //Verificar que la solicitud no venga vacia
+    const contentLength = request.headers.get("Content-Length");
+    if (contentLength === "0") {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "El cuerpo de la solicitud esta vacio",
+      };
+      return;
+    }
+
+    //Traer el body
+    const body = await request.body.json();
+
+    //Validar el cuerpo
+    const validated = programaValidacion.parse(body);
+    const programaDate = {
+      id: null,
+      ...validated,
+    };
+
+    const objPrograma = new Programa(programaDate);
+    const resultado = await objPrograma.insertarPrograma();
+
+    if (resultado.success) {
+      response.status = 201;
+      response.body = {
+        success: true,
+        message: "Programas creado correctamente",
+        data: resultado.usuario,
+      };
+    } else {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "Este programa ya existe en la base de datos: Error " +
+          resultado.message,
+      };
+    }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "Datos invalidos",
+        errors: error.format(),
+      };
+    } else {
+      response.status = 500;
+      response.body = {
+        success: false,
+        messsage: "Error interno del servidor",
+      };
+    }
+  }
 };
 
 export const putPrograma = async (ctx: Context) => {
