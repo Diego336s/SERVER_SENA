@@ -5,8 +5,10 @@ POST http://localhost:8000/instructor
 Content-Type: application/json
 
 {
-  "name": "John Doe",
-  "email": ""
+  "nombre": "Osman",
+  "apellido": "Aranguren",
+  "email": "osman123@gmail.com",
+  "telefono": "3123423232"
 }
 ###
 PUT http://localhost:8000/instructor

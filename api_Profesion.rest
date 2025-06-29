@@ -5,7 +5,7 @@ POST http://localhost:8000/profesion
 Content-Type: application/json
 
 {
-  "name": "Ciencias",
+  "nombre_profesion": "Ciencias"
 }
 ###
 PUT http://localhost:8000/profesion
