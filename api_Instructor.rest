@@ -15,8 +15,11 @@ PUT http://localhost:8000/instructor
 Content-Type: application/json
 
 {
-  "name": "Jane Doe",
-  "email": ""
+  "id_instructor": "2",
+  "nombre": "Osman",
+  "apellido": "Escobar",
+  "email": "osman123@gmail.com",
+  "telefono": "3123423232"
 }
 ###
-DELETE http://localhost:8000/instructor/1
+DELETE http://localhost:8000/instructor/3

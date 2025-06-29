@@ -104,9 +104,102 @@ export const postInstructor = async (ctx: Context) => {
   }
 };
 export const putInstructor = async (ctx: Context) => {
+  const { response, request } = ctx;
 
+  try {
+    const contentLength = request.headers.get("Content-Length");
+    if (contentLength === "0") {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "El cuerpo de la solicitud está vacío",
+      };
+      return;
+    }
+
+    const body = await request.body.json();
+
+    // validar con el esquema para actualización
+    const validated = InstructorShema.parse(body);
+    const usuarioData = {
+      id_instructor: body.id_instructor,
+      ...validated,
+    };
+    const objUsuario = new Instructor(usuarioData);
+    const result = await objUsuario.EditarInstructor();
+
+    if (result.success) {
+      response.status = 200;
+      response.body = {
+        success: true,
+        message: result.message,
+        data: result.instructor,
+      };
+    } else {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: result.message,
+      };
+    }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "Datos invalidos",
+        errors: error.format(),
+      };
+    } else {
+      response.status = 500;
+      response.body = {
+        success: false,
+        message: "Error de servidor",
+      };
+    }
+  }
 };
 export const deleteInstructor = async (
   ctx: RouterContext<"/instructor/:id">,
 ) => {
+  const { response, params } = ctx;
+
+  try {
+    const id = params?.id;
+
+    if (!id) {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "Id del instructor no fue proporcionado",
+      };
+      return;
+    }
+
+    const objUsuario = new Instructor();
+    const result = await objUsuario.EliminarInstructor(parseInt(id));
+
+    if (result.success) {
+      response.status = 200;
+      response.body = {
+        success: true,
+        message: result.message,
+      };
+    } else {
+      response.status = 404;
+      response.body = {
+        success: true,
+        message: result.message,
+      };
+    }
+  } catch (error) {
+    console.error("error del servidor", error);
+    
+    response.status = 500;
+    response.body = {
+      success: false,
+      message: "Error interno del servidor al procesar la eliminación",
+    };
+  }
+
 };

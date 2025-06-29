@@ -12,7 +12,8 @@ PUT http://localhost:8000/profesion
 Content-Type: application/json
 
 {
-  "name": "Ciencias",
+  "id_profesion": "1",
+  "nombre_profesion": "Nadaaaaa"
 }
 ###
 DELETE http://localhost:8000/profesion/1
