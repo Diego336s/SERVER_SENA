@@ -1,0 +1,18 @@
+GET  http://localhost:8000/profesion
+###
+
+POST http://localhost:8000/profesion
+Content-Type: application/json
+
+{
+  "name": "Ciencias",
+}
+###
+PUT http://localhost:8000/profesion
+Content-Type: application/json
+
+{
+  "name": "Ciencias",
+}
+###
+DELETE http://localhost:8000/profesion/1
