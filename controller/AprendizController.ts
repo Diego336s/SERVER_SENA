@@ -1,6 +1,7 @@
 import { Context, RouterContext, z } from "../dependencies/dependecias.ts";
 
 export const getAprendiz = async (ctx: Context) =>{
+   const {response} = ctx;       
 
 }
 
