@@ -63,6 +63,62 @@ export class Programa {
         throw new Error("No se pudo registrar el programa");
       }
     } catch (error) {
+      await Conexion.execute("ROLLBACK");
+      if (error instanceof Error) {
+        return {
+          success: false,
+          message: error.message,
+        };
+      } else {
+        return {
+          success: false,
+          message: "Error interno del servidor",
+        };
+      }
+    }
+  }
+
+  public async editarPrograma(): Promise<{
+    success: boolean;
+    message: string;
+    usuario?: Record<string, unknown>;
+  }> {
+    try {
+      if (!this._objPrograma) {
+        throw new Error("No se han proporcionado un ubjeto valido");
+      }
+
+      const { id, programa } = this._objPrograma;
+      if (!id || !programa) {
+        throw new Error("Falta campo requerido para editar el programa");
+      }
+      await Conexion.execute("START TRANSACTION");
+      const resultado = await Conexion.execute(
+        "UPDATE programa SET nombre_programa = ? WHERE id_programa = ? ",
+        [
+          programa,
+          id,
+        ],
+      );
+      if (
+        resultado && typeof resultado.affectedRows === "number" &&
+        resultado.affectedRows > 0
+      ) {
+        const [programa] = await Conexion.query(
+          "SELECT * FROM programa WHERE id_programa = ?",
+          [id],
+        );
+        await Conexion.execute("COMMIT");
+        return {
+          success: true,
+          message: "Programa editado correctamente",
+          usuario: programa,
+        };
+      } else {
+        throw new Error("No se pudo editar el programa");
+      }
+    } catch (error) {
+      await Conexion.execute("ROLLBACK");
       if (error instanceof Error) {
         return {
           success: false,

@@ -7,3 +7,12 @@ Content-Type: application/json
 {
 "programa": "Electricidad Industrial"
 }
+###
+
+PUT http://localhost:8000/programa
+Content-Type: application/json
+
+{
+"id": "3",
+"programa": "Electricidad Industrial Sena"
+}
