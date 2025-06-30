@@ -132,4 +132,47 @@ export class Programa {
       }
     }
   }
+
+  public async eliminarPrograma(id: number): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    try {
+      if (!id) {
+        throw new Error("El id del programa es obligatorio");
+      }
+
+      await Conexion.execute("START TRANSACTION");
+      const resultado = await Conexion.execute(
+        "DELETE FROM programa WHERE id_programa = ?",
+        [id],
+      );
+
+      if (
+        resultado && typeof resultado.affectedRows === "number" &&
+        resultado.affectedRows > 0
+      ) {
+        await Conexion.execute("COMMIT");
+        return {
+          success: true,
+          message: "Programa eliminado correctamente",
+        };
+      } else {
+        throw new Error("No se pudo eliminar el programa");
+      }
+    } catch (error) {
+      await Conexion.execute("ROLLBACK");
+      if (error instanceof Error) {
+        return {
+          success: false,
+          message: error.message,
+        };
+      } else {
+        return {
+          success: false,
+          message: "Error interno del servidor",
+        };
+      }
+    }
+  }
 }

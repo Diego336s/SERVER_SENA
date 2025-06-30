@@ -13,6 +13,10 @@ PUT http://localhost:8000/programa
 Content-Type: application/json
 
 {
-"id": "3",
+"id": "7",
 "programa": "Electricidad Industrial Sena"
 }
+###
+
+DELETE http://localhost:8000/programa/7
+

@@ -174,4 +174,53 @@ export const putPrograma = async (ctx: Context) => {
 };
 
 export const deletePrograma = async (ctx: RouterContext<"/programa/:id">) => {
+  const { response, params } = ctx;
+
+  const idString = params?.id;
+
+  if (!idString || idString == null) {
+    response.status = 400;
+    response.body = {
+      success: false,
+      message: "El id del programa es obligatorio",
+    };
+    return;
+  }
+
+  //Convertir el id a un numero
+  const id = Number(idString);
+  try {
+    const objPrograma = new Programa();
+    const resultado = await objPrograma.eliminarPrograma(id);
+
+    if (resultado.success) {
+      response.status = 200;
+      response.body = {
+        success: false,
+        message: "Programa elimiando correctamente.",
+      };
+    } else {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "Error al eliminar el Programa: " + resultado.message,
+      };
+    }
+  } catch (error) {
+    if (error instanceof Error) {
+      response.status = 500;
+      response.body = {
+        success: false,
+        message: "Error interno del servidor",
+        error: error.message,
+      };
+    } else {
+      response.status = 500;
+      response.body = {
+        success: false,
+        message: "Error interno del servidor",
+        error: String(error),
+      };
+    }
+  }
 };
