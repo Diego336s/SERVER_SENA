@@ -1,14 +1,8 @@
-
 import { Context, RouterContext, z } from "../dependencies/dependecias.ts";
 import { Ficha } from "../models/fichaModel.ts";
 
-
 const fichaValidacion = z.object({
   codigo: z.string().min(1, "El codigo es obligatorio"),
-  fecha_inicio_lectiva: z.date(),
-  fecha_fin_lectiva: z.date(),
-  fecha_fin_practica: z.date(),
-  id_programa: z.number().int(),
 });
 
 export const getFicha = async (ctx: Context) => {
@@ -65,37 +59,65 @@ export const postFicha = async (ctx: Context) => {
 
     // Validar el cuerpo de la solicitud
     const body = await request.body.json();
+
     const validacion = fichaValidacion.parse(body);
+
+    // Verificar que las fechas sean validas
+    if (
+      !body.fecha_inicio_lectiva || !body.fecha_fin_lectiva ||
+      !body.fecha_fin_practica
+    ) {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "Las fechas de inicio y fin son obligatorias",
+      };
+      return;
+    }
+
+    if (
+      !body.id_programa || body.id_programa == null ||
+      Number(body.id_programa) <= 0
+    ) {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "El id del programa es obligatorio y debe ser un numero",
+      };
+      return;
+    }
 
     const fichaDate = {
       id_ficha: null,
       ...validacion,
+      fecha_inicio_lectiva: new Date(body.fecha_inicio_lectiva),
+      fecha_fin_lectiva: new Date(body.fecha_fin_lectiva),
+      fecha_fin_practica: new Date(body.fecha_fin_practica),
+      id_programa: Number(body.id_programa),
     };
 
     const objFicha = new Ficha(fichaDate);
     const resultado = await objFicha.insertarFicha();
 
-    if(resultado.success){
+    if (resultado.success) {
       response.status = 201;
       response.body = {
         success: true,
         message: "Ficha creada exitosamente",
         data: resultado.ficha,
       };
-    }else{
+    } else {
       response.status = 400;
       response.body = {
         success: false,
-        message: "Error al crear la ficha: Error " +  resultado.message,
+        message: "Error al crear la ficha: Error " + resultado.message,
       };
-
     }
-  
   } catch (error) {
     if (error instanceof z.ZodError) {
       response.status = 400;
       response.body = {
-        success: false, 
+        success: false,
         message: "Error interno del servidor",
         errors: error.format(),
       };
@@ -103,43 +125,7 @@ export const postFicha = async (ctx: Context) => {
       response.status = 500;
       response.body = {
         success: false,
-        message: "Error interno del servidor: " + String(error),       
-      };
-    }
-  }
-};
-
-export const deleteFicha = async (ctx: RouterContext<"/ficha/:id">) => {
-  const { response, params } = ctx;
-  try {
-    const id_ficha = parseInt(params.id_ficha || "");
-    if (isNaN(id_ficha) || id_ficha <= 0) {
-      response.status = 400;
-      response.body = {
-        success: false,
-        message: "El id de la ficha es invalido",
-      };
-      return;
-    }
-
-    const objFicha = new Ficha();
-    const resultado = await objFicha.eliminarFicha(id_ficha);
-    response.status = resultado.success ? 200 : 500;
-    response.body = resultado;
-  } catch (error) {
-    if (error instanceof Error) {
-      response.status = 500;
-      response.body = {
-        success: false,
-        message: "Error interno del servidor",
-        error: error.message,
-      };
-    } else {
-      response.status = 500;
-      response.body = {
-        success: false,
-        message: "Error interno del servidor",
-        error: String(error),
+        message: "Error interno del servidor: " + String(error),
       };
     }
   }
@@ -161,10 +147,42 @@ export const putFicha = async (ctx: Context) => {
       return;
     }
     const validacion = fichaValidacion.parse(body);
+
+    // Verificar que las fechas sean validas
+    if (
+      !body.fecha_inicio_lectiva || !body.fecha_fin_lectiva ||
+      !body.fecha_fin_practica
+    ) {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "Las fechas de inicio y fin son obligatorias",
+      };
+      return;
+    }
+    // Verificar que el id_programa sea valido
+
+    if (
+      !body.id_programa || body.id_programa == null ||
+      Number(body.id_programa) <= 0
+    ) {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "El id del programa es obligatorio",
+      };
+      return;
+    }
+
     const fichaDate = {
-      id_ficha: body.id_ficha,
+      id_ficha: Number(body.id_ficha),
       ...validacion,
+      fecha_inicio_lectiva: new Date(body.fecha_inicio_lectiva),
+      fecha_fin_lectiva: new Date(body.fecha_fin_lectiva),
+      fecha_fin_practica: new Date(body.fecha_fin_practica),
+      id_programa: Number(body.id_programa),
     };
+
     const objFicha = new Ficha(fichaDate);
     const resultado = await objFicha.editarFicha();
 
@@ -182,22 +200,67 @@ export const putFicha = async (ctx: Context) => {
         message: "Error al actualizar la ficha",
         error: resultado.message,
       };
-
     }
   } catch (error) {
-    if (error instanceof Error) {
-      response.status = 500;
+    if (error instanceof z.ZodError) {
+      response.status = 400;
       response.body = {
         success: false,
         message: "Error interno del servidor",
-        error: error.message,
+        errors: error.format(),
       };
     } else {
       response.status = 500;
       response.body = {
         success: false,
+        message: "Error interno del servidor: " + String(error),
+      };
+    }
+  }
+};
+
+export const deleteFicha = async (ctx: RouterContext<"/ficha/:id">) => {
+  const { response, params } = ctx;
+  try {
+    const id = params.id;
+    if (!id || Number(id) <= 0) {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "El id de la ficha es obligatorio y debe ser un numero",
+      };
+      return;
+    }
+
+    const objFicha = new Ficha();
+    const resultado = await objFicha.eliminarFicha(Number(id));
+
+    if (resultado.success) {
+      response.status = 200;
+      response.body = {
+        success: true,
+        message: "Ficha eliminada exitosamente",
+      };
+    } else {
+      response.status = 400;
+      response.body = {
+        success: false,
+        message: "Error al eliminar la ficha: " + resultado.message,
+      };
+    }
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      response.status = 400;
+      response.body = {
+        success: false,
         message: "Error interno del servidor",
-        error: String(error),
+        errors: error.format(),
+      };
+    } else {
+      response.status = 500;
+      response.body = {
+        success: false,
+        message: "Error interno del servidor: " + String(error),
       };
     }
   }
