@@ -1,0 +1,14 @@
+GET  http://localhost:8000/ficha
+###
+
+POST http://localhost:8000/ficha
+Content-Type: application/json
+
+{
+  
+    "codigo": "291321",
+    "fecha_inicio_lectiva": 01-01-2023,
+    "fecha_fin_lectiva": 12-31-2023,
+    "fecha_fin_practica": 05-31-2024,
+    "id_programa": 1
+}

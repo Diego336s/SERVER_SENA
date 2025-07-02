@@ -18,7 +18,7 @@ export class Ficha {
 
   
 
-  //Listar programa
+  
   public async listarFicha(): Promise<FichaData[]>{
     try {
       const resultado = await Conexion.execute("SELECT * FROM ficha");

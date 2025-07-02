@@ -2,14 +2,13 @@
 import { Context, RouterContext, z } from "../dependencies/dependecias.ts";
 import { Ficha } from "../models/fichaModel.ts";
 
+
 const fichaValidacion = z.object({
   codigo: z.string().min(1, "El codigo es obligatorio"),
   fecha_inicio_lectiva: z.date(),
   fecha_fin_lectiva: z.date(),
   fecha_fin_practica: z.date(),
-  id_programa: z.number().int().positive(
-    "El id del programa debe ser un numero positivo",
-  ),
+  id_programa: z.number().int(),
 });
 
 export const getFicha = async (ctx: Context) => {
@@ -65,36 +64,46 @@ export const postFicha = async (ctx: Context) => {
     }
 
     // Validar el cuerpo de la solicitud
-     const body = await request.body.json();
-     const validacion = fichaValidacion.parse(body);
-    if (!validacion.success) {
+    const body = await request.body.json();
+    const validacion = fichaValidacion.parse(body);
+
+    const fichaDate = {
+      id_ficha: null,
+      ...validacion,
+    };
+
+    const objFicha = new Ficha(fichaDate);
+    const resultado = await objFicha.insertarFicha();
+
+    if(resultado.success){
+      response.status = 201;
+      response.body = {
+        success: true,
+        message: "Ficha creada exitosamente",
+        data: resultado.ficha,
+      };
+    }else{
       response.status = 400;
       response.body = {
         success: false,
-        message: "Datos invalidos",
-        errors: validacion.error.errors,
+        message: "Error al crear la ficha: Error " +  resultado.message,
       };
-      return;
-    }
 
-    const objFicha = new Ficha(validacion.data);
-    const resultado = await objFicha.insertarFicha();
-    response.status = resultado.success ? 201 : 500;
-    response.body = resultado;
+    }
+  
   } catch (error) {
-    if (error instanceof Error) {
-      response.status = 500;
+    if (error instanceof z.ZodError) {
+      response.status = 400;
       response.body = {
-        success: false,
+        success: false, 
         message: "Error interno del servidor",
-        error: error.message,
+        errors: error.format(),
       };
     } else {
       response.status = 500;
       response.body = {
         success: false,
-        message: "Error interno del servidor",
-        error: String(error),
+        message: "Error interno del servidor: " + String(error),       
       };
     }
   }
@@ -152,14 +161,28 @@ export const putFicha = async (ctx: Context) => {
       return;
     }
     const validacion = fichaValidacion.parse(body);
-    if (!validacion.success) {
+    const fichaDate = {
+      id_ficha: body.id_ficha,
+      ...validacion,
+    };
+    const objFicha = new Ficha(fichaDate);
+    const resultado = await objFicha.editarFicha();
+
+    if (resultado.success) {
+      response.status = 200;
+      response.body = {
+        success: true,
+        message: "Ficha actualizada exitosamente",
+        data: resultado.ficha,
+      };
+    } else {
       response.status = 400;
       response.body = {
         success: false,
-        message: "Datos invalidos",
-        errors: validacion.error.errors,
+        message: "Error al actualizar la ficha",
+        error: resultado.message,
       };
-      return;
+
     }
   } catch (error) {
     if (error instanceof Error) {

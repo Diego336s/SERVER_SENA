@@ -9,4 +9,4 @@ FichaRouter.post("/ficha", postFicha);
 FichaRouter.put("/ficha", putFicha);
 FichaRouter.delete("/ficha/:id", deleteFicha);
 
-export {FichaRouter};
+export {FichaRouter}; 
