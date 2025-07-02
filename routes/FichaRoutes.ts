@@ -1,5 +1,5 @@
 import { Router } from "../dependencies/dependecias.ts";
-import { getFicha, postFicha, putFicha, deleteFicha } from "../controller/AprendizController.ts";
+import { getFicha, postFicha, putFicha, deleteFicha } from "../controller/FichaController.ts";
 
 
 const FichaRouter = new Router();
