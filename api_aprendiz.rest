@@ -2,4 +2,24 @@ GET  http://localhost:8000/aprendiz
 ###
 
 POST http://localhost:8000/aprendiz
+Content-Type: application/json
 
+{
+  "nombre": "Maryu",
+  "apellido": "Zorro",
+  "email": "maryu@gmail.com",
+  "telefono": "1234567890"
+}
+###
+PUT http://localhost:8000/aprendiz
+Content-Length: application/json
+
+{
+  "id_aprendiz": "1",
+  "nombre": "Maryu",
+  "apellido": "Silva",
+  "email": "MaryuSilva@gmail.com",
+  "telefono": "31353454"
+}
+###
+DELETE http://localhost:8000/aprendiz/1
