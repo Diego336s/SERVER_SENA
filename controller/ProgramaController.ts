@@ -1,4 +1,4 @@
-import { errors } from "https://deno.land/x/oak@v17.1.4/deps.ts";
+
 import { Context, RouterContext, z } from "../dependencies/dependecias.ts";
 import { Programa } from "../models/ProgramaModel.ts";
 

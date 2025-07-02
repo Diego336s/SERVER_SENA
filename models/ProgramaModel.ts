@@ -92,6 +92,7 @@ export class Programa {
       if (!id || !programa) {
         throw new Error("Falta campo requerido para editar el programa");
       }
+      
       await Conexion.execute("START TRANSACTION");
       const resultado = await Conexion.execute(
         "UPDATE programa SET nombre_programa = ? WHERE id_programa = ? ",
@@ -132,11 +133,15 @@ export class Programa {
       }
     }
   }
-
-  public async eliminarPrograma(id: number): Promise<{
+  
+   public async eliminarPrograma(id: number): Promise<{
     success: boolean;
     message: string;
   }> {
+
+    
+   
+    
     try {
       if (!id) {
         throw new Error("El id del programa es obligatorio");
