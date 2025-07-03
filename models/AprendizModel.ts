@@ -6,6 +6,8 @@ interface AprendizData {
   apellido: string;
   email: string;
   telefono: string;
+  instructor_id_instructor: number;
+  ficha_id_ficha: number;
 }
 
 export class Aprendiz {
@@ -17,7 +19,25 @@ export class Aprendiz {
 
   public async ListarAprendiz(): Promise<AprendizData[]> {
     try {
-      const resultado = await Conexion.execute("SELECT * FROM aprendiz");
+      const resultado = await Conexion.execute(
+        `SELECT 
+        f.codigo,
+        a.id_aprendiz,
+        a.nombre AS nombre_aprendiz,
+        a.apellido AS apellido_aprendiz,
+        a.email AS email_aprendiz,
+        a.telefono AS telefono_aprendiz,
+        p.nombre_programa,
+        i.id_instructor,
+        i.nombre AS nombre_instructor,
+        i.apellido AS apellido_instructor,
+        f.id_ficha
+    FROM ficha f
+    JOIN programa p ON f.id_programa = p.id_programa
+    JOIN ficha_aprendiz_instructor fai ON f.id_ficha = fai.ficha_id_ficha
+    JOIN aprendiz a ON fai.aprendiz_id_aprendiz = a.id_aprendiz
+    JOIN instructor i ON fai.instructor_id_instructor = i.id_instructor`,
+      );
 
       if (!resultado || !resultado.rows) {
         console.warn("La consulta no devolvió resultados");
@@ -37,8 +57,18 @@ export class Aprendiz {
       if (!this._objAprendiz) {
         throw new Error("No se proporcionó información del aprendiz");
       }
-      const { nombre, apellido, email, telefono } = this._objAprendiz;
-      if (!nombre || !apellido || !email || !telefono) {
+      const {
+        nombre,
+        apellido,
+        email,
+        telefono,
+        instructor_id_instructor,
+        ficha_id_ficha,
+      } = this._objAprendiz;
+      if (
+        !nombre || !apellido || !email || !telefono ||
+        !instructor_id_instructor || !ficha_id_ficha
+      ) {
         throw new Error("El nombre del aprendiz es requerido");
       }
 
@@ -56,6 +86,24 @@ export class Aprendiz {
         const [aprendiz] = await Conexion.query(
           "SELECT * FROM aprendiz WHERE id_aprendiz = LAST_INSERT_ID()",
         );
+
+        const resultadoRelacion = await Conexion.execute(
+          "INSERT INTO ficha_aprendiz_instructor (aprendiz_id_aprendiz, ficha_id_ficha, instructor_id_instructor) VALUES (?, ?, ?)",
+          [
+            aprendiz.id_aprendiz,
+            ficha_id_ficha,
+            instructor_id_instructor,
+          ],
+        );
+        if (
+          !resultadoRelacion ||
+          typeof resultadoRelacion.affectedRows !== "number" ||
+          resultadoRelacion.affectedRows <= 0
+        ) {
+          throw new Error(
+            "No se pudo establecer la relación entre aprendiz, ficha e instructor",
+          );
+        }
 
         await Conexion.execute("COMMIT");
         return {
@@ -89,9 +137,19 @@ export class Aprendiz {
         throw new Error("No se ha proporcionado un objeto valido");
       }
 
-      const { id_aprendiz, nombre, apellido, email, telefono } =
-        this._objAprendiz;
-      if (!id_aprendiz || !nombre || !apellido || !email || !telefono) {
+      const {
+        id_aprendiz,
+        nombre,
+        apellido,
+        email,
+        telefono,
+        instructor_id_instructor,
+        ficha_id_ficha,
+      } = this._objAprendiz;
+      if (
+        !nombre || !apellido || !email || !telefono ||
+        !instructor_id_instructor || !ficha_id_ficha
+      ) {
         throw new Error("Faltan campos requeridos para editar el aprendiz");
       }
 
@@ -117,6 +175,24 @@ export class Aprendiz {
           [id_aprendiz],
         );
 
+        const resultadoRelacion = await Conexion.execute(
+          "UPDATE ficha_aprendiz_instructor SET ficha_id_ficha = ?, instructor_id_instructor = ? WHERE aprendiz_id_aprendiz = ?",
+          [
+            ficha_id_ficha,
+            instructor_id_instructor,
+            id_aprendiz,
+          ],
+        );
+        if (
+          !resultadoRelacion ||
+          typeof resultadoRelacion.affectedRows !== "number" ||
+          resultadoRelacion.affectedRows <= 0
+        ) {
+          throw new Error(
+            "No se pudo actualizar la relación entre aprendiz, ficha e instructor",
+          );
+        }
+
         //Confirmar transaccion
         await Conexion.execute("COMMIT");
 
@@ -126,7 +202,7 @@ export class Aprendiz {
           aprendiz: aprendiz,
         };
       } else {
-        throw new Error("No se pudo insertar el aprendiz");
+        throw new Error("No se pudo editar el aprendiz");
       }
     } catch (error) {
       //Rollback en caso de error
@@ -151,6 +227,25 @@ export class Aprendiz {
   ): Promise<{ success: boolean; message: string }> {
     try {
       await Conexion.execute("START TRANSACTION");
+      const relacionResult = await Conexion.execute(
+        "DELETE FROM ficha_aprendiz_instructor WHERE aprendiz_id_aprendiz = ?",
+        [
+          id_aprendiz,
+        ],
+      );
+
+      if (
+        !relacionResult ||
+        typeof relacionResult.affectedRows !== "number" ||
+        relacionResult.affectedRows <= 0
+      ) {
+        await Conexion.execute("ROLLBACK");
+        return {
+          success: false,
+          message:
+            "No se pudo eliminar la relación entre el aprendiz y la ficha/instructor.",
+        };
+      }
 
       const result = await Conexion.execute(
         "DELETE FROM aprendiz WHERE id_aprendiz = ?",

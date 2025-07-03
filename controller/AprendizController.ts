@@ -6,6 +6,8 @@ const AprendizSchema = z.object({
   apellido: z.string().min(1, "El apellido es obligatorio"),
   email: z.string().email(),
   telefono: z.string().min(1, "El teléfono es obligatorio"),
+  instructor_id_instructor: z.number().int().positive("El ID del instructor debe ser un número entero positivo"),
+  ficha_id_ficha: z.number().int().positive("El ID de la ficha debe ser un número entero positivo"),
 });
 
 export const getAprendiz = async (ctx: Context) => {

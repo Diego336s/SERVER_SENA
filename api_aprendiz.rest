@@ -8,18 +8,22 @@ Content-Type: application/json
   "nombre": "Maryu",
   "apellido": "Zorro",
   "email": "maryu@gmail.com",
-  "telefono": "1234567890"
+  "telefono": "1234567890",
+  "instructor_id_instructor": 1,
+  "ficha_id_ficha": 2
 }
 ###
 PUT http://localhost:8000/aprendiz
 Content-Length: application/json
 
 {
-  "id_aprendiz": "1",
+  "id_aprendiz": "4",
   "nombre": "Maryu",
   "apellido": "Silva",
   "email": "MaryuSilva@gmail.com",
-  "telefono": "31353454"
+  "telefono": "31353454",
+  "instructor_id_instructor": 1,
+  "ficha_id_ficha": 3
 }
 ###
-DELETE http://localhost:8000/aprendiz/1
+DELETE http://localhost:8000/aprendiz/4

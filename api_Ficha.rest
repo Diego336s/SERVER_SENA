@@ -6,7 +6,7 @@ Content-Type: application/json
 
 {
   
-    "codigo": "29132122",
+    "codigo": "2913212",
     "fecha_inicio_lectiva": "2023-01-01" ,
     "fecha_fin_lectiva": "2023-12-31" ,
     "fecha_fin_practica": "2024-05-31" ,
